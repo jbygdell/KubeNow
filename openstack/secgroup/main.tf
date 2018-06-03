@@ -33,5 +33,5 @@ output "secgroup_name" {
   #
   # This is tracked upstream: https://github.com/hashicorp/hil/issues/50
   #
-  value = "${ var.secgroup_name == "" ? join(" ", openstack_compute_secgroup_v2.created.*.name) : var.secgroup_name }"
+  value = "${ var.secgroup_name == "" ? join(" ", openstack_networking_secgroup_v2.created.*.name) : var.secgroup_name }"
 }
