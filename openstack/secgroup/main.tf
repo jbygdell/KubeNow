@@ -25,6 +25,32 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_allow_all_intern
   security_group_id = "${openstack_networking_secgroup_v2.created.id}"
 }
 
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_allow_all_internal2" {
+  # create only if not specified in var.secgroup_name
+  count = "${var.secgroup_name == "" ? 1 : 0}"
+
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "udp"
+  port_range_min    = "1"
+  port_range_max    = "64535"
+  remote_group_id   = "${openstack_networking_secgroup_v2.created.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.created.id}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_allow_all_internal3" {
+  # create only if not specified in var.secgroup_name
+  count = "${var.secgroup_name == "" ? 1 : 0}"
+
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "icmp"
+  port_range_min    = "1"
+  port_range_max    = "64535"
+  remote_group_id   = "${openstack_networking_secgroup_v2.created.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.created.id}"
+}
+
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ingress_tcp_ports" {
   # create only if not specified in var.secgroup_name
   count = "${var.secgroup_name == "" ? length(var.ingress_tcp_ports) : 0}"
