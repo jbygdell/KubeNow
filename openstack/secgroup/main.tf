@@ -1,53 +1,71 @@
 variable name_prefix {}
 variable secgroup_name {}
 
-resource "openstack_compute_secgroup_v2" "created" {
+variable default_ports {
+  default = ["22", "80", "443"]
+}
+
+variable extra_ports {
+  default = ["8080", "8081"]
+}
+
+resource "openstack_networking_secgroup_v2" "created" {
   # create only if not specified in var.secgroup_name
   count       = "${var.secgroup_name == "" ? 1 : 0}"
   name        = "${var.name_prefix}-secgroup"
   description = "The automatically created secgroup for ${var.name_prefix}"
+}
 
-  rule {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    cidr        = "0.0.0.0/0"
-  }
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ssh" {
+  # create only if not specified in var.secgroup_name
+  count       = "${var.secgroup_name == "" ? 1 : 0}"
 
-  rule {
-    from_port   = 44
-    to_port     = 44
-    ip_protocol = "tcp"
-    cidr        = "0.0.0.0/0"
-  }
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.created.id}"
+}
 
-  rule {
-    from_port   = 80
-    to_port     = 80
-    ip_protocol = "tcp"
-    cidr        = "0.0.0.0/0"
-  }
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_http" {
+  # create only if not specified in var.secgroup_name
+  count       = "${var.secgroup_name == "" ? 1 : 0}"
 
-  rule {
-    from_port   = 443
-    to_port     = 443
-    ip_protocol = "tcp"
-    cidr        = "0.0.0.0/0"
-  }
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 80
+  port_range_max    = 80
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.created.id}"
+}
 
-  rule {
-    from_port   = 1      # All internal tcp traffic
-    to_port     = 65535
-    ip_protocol = "tcp"
-    self        = "true"
-  }
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_defaults" {
+  # create only if not specified in var.secgroup_name
+  count       = "${var.secgroup_name == "" ? 1 : 0}"
 
-  rule {
-    from_port   = 1      # All internal udp traffic
-    to_port     = 65535
-    ip_protocol = "udp"
-    self        = "true"
-  }
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 443
+  port_range_max    = 443
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.created.id}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_extra" {
+  # create only if not specified in var.secgroup_name
+  count       = "${length(var.extra_ports)}"
+
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = "${element(var.extra_ports, count.index)}"
+  port_range_max    = "${element(var.extra_ports, count.index)}"
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.created.id}"
 }
 
 output "secgroup_name" {
