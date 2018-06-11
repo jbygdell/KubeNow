@@ -22,6 +22,8 @@ ENV PLUGIN_NULL=1.0.0
 ENV PLUGIN_CLOUDFLARE=0.1.0
 ENV PLUGIN_TEMPLATE=1.0.0
 ENV PLUGIN_RANDOM=1.0.0
+# Pip version, PIP_VERSION env is reserved by Pip
+ENV PIP=9.0.3
 
 # Install with apt and pip
 RUN apt-get update -y && \
@@ -43,9 +45,8 @@ RUN apt-get update -y && \
       | apt-key add - && \
     apt-get update -y && apt-get install -y \
       google-cloud-sdk="$GOOGLE_CLOUD_SDK_VERSION" && \
-    `# Pip` \
-    pip install --no-cache-dir --upgrade \
-      pip && \
+    `# Upgrade pip and install pip deps` \
+    pip install --no-cache-dir --upgrade pip=="${PIP}" && \
     pip install --no-cache-dir \
       ansible=="$ANSIBLE_VERSION" \
       j2cli=="$J2CLI_VERSION" \
@@ -63,6 +64,11 @@ RUN apt-get update -y && \
     rm -rf /usr/lib/google-cloud-sdk/platform/gsutil && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Install json2hcl
+RUN curl -L "https://github.com/kvz/json2hcl/releases/download/v0.0.6/json2hcl_v0.0.6_linux_amd64" > \
+    "/bin/json2hcl" && \
+    chmod a+rx /bin/json2hcl
 
 # Install Terraform
 RUN curl "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" > \
