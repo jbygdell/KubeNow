@@ -48,6 +48,7 @@ provision = {
     "playbook"   = "playbooks/install-core.yml"
     "extra_vars" = {
       # To disable traefik in favor for an external ingress controller comment the line below.
+      # To use nginx instead of traefik replace "traefik" with "nginx" on the line below.
       "ingress_controller"       = "traefik"
     }
   }
